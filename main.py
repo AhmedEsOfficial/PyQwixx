@@ -39,7 +39,6 @@ def screen_update(screen, players):
 
 
 def main():
-    #game setup
     players = get_num_players()
     pygame.init()
     clock = pygame.time.Clock()
@@ -53,7 +52,7 @@ def main():
     if players == 5 or players == 6:
         screen = pygame.display.set_mode((1610, 1220))
 
-        screen_update(screen, players)
+    screen_update(screen, players)
 
 
     while running:
@@ -66,8 +65,9 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 position = pygame.mouse.get_pos()
                 print("mouse clicked at", position)
+                pygame.draw.rect(screen, "gray", pygame.Rect(position[0] - 10, position[1] - 10, 50, 50))
+                pygame.display.flip()
 
-                screen_update(screen, players)
 
 
 
