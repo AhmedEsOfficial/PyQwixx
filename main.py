@@ -52,13 +52,13 @@ def main():
     clock = pygame.time.Clock()
     running = True
 
-    screen = pygame.display.set_mode((810, 850))
+    screen = pygame.display.set_mode((1610, 1220))
 
-    if players == 3 or players == 4:
-        screen = pygame.display.set_mode((1610, 850))
-
-    if players == 5 or players == 6:
-        screen = pygame.display.set_mode((1610, 1220))
+    # if players == 3 or players == 4:
+    #     screen = pygame.display.set_mode((1610, 850))
+    #
+    # if players == 5 or players == 6:
+    #     screen = pygame.display.set_mode((1610, 1220))
 
     initial_build(screen, players)
     logic.game(6, 0)
@@ -97,6 +97,11 @@ def take_turn(screen, q, players):
             position = pygame.mouse.get_pos()
             if (position[0] >140 and position[0]<160) and (position[1]>10 and position[1]<30):
                 roll_dice()
+            if (position[0] >635 and position[0]<765) and (position[1]>50 and position[1]<80):
+                print("NEW GAME")
+                reset_game(screen)
+            if(position[0] >635 and position[0]<765) and (position[1]>15 and position[1]<45):
+                print("NEW TURN")
             check_grid(screen, position, players)
 
 def mark_box(screen, x, y):
@@ -116,6 +121,9 @@ def roll_dice():
     for i in range(6):
         DICE_NUMBERS[i]=random.randint(1,6)
 
+def reset_game(screen):
+    players = get_num_players()
+    initial_build(screen,players)
 
 def check_grid(screen, position, players):
 
