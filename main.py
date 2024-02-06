@@ -1,6 +1,5 @@
-# Example file showing a basic pygame "game loop"
 import pygame
-
+import random
 
 def get_num_players():
     num_players = 0
@@ -10,7 +9,7 @@ def get_num_players():
     return num_players
 
 
-def screen_update(screen, players):
+def initial_build(screen, players):
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("white")
     board1_location = (50, 100)
@@ -34,13 +33,19 @@ def screen_update(screen, players):
         board5_location = (830, 840)
         create_board(board5_location, screen)
 
+    display_dice(screen, DICE_NUMBERS)
+    new_game(screen)
+    end_turn_button(screen)
     # flip() the display to put your work on screen
     pygame.display.flip()
 
 
 def main():
+    #game setup
     players = get_num_players()
+    # players = 3
     pygame.init()
+
     clock = pygame.time.Clock()
     running = True
 
@@ -52,28 +57,126 @@ def main():
     if players == 5 or players == 6:
         screen = pygame.display.set_mode((1610, 1220))
 
-    screen_update(screen, players)
-
+    initial_build(screen, players)
 
     while running:
         # poll for events
         # pygame.QUIT event means the user clicked X to close your window
-        for event in pygame.event.get():
+        q = []
+        q = pygame.event.get()
+        for event in q:
             if event.type == pygame.QUIT:
                 running = False
+        take_turn(screen, q, players)
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                position = pygame.mouse.get_pos()
-                print("mouse clicked at", position)
-                pygame.draw.rect(screen, "gray", pygame.Rect(position[0] - 10, position[1] - 10, 50, 50))
-                pygame.display.flip()
-
-
-
-
-        clock.tick(60)  # limits FPS to 60
+            # if event.type == pygame.MOUSEBUTTONDOWN:
+            #     position = pygame.mouse.get_pos()
+            #     print("mouse clicked at", position)
+            #     if (position[0] > 140 and position[0] < 160) and (position[1] > 10 and position[1] < 30):
+            #         roll_dice()
+        screen_update(screen)
+        clock.tick(600)  # limits FPS to 60
 
     pygame.quit()
+
+def screen_update(screen):
+    display_dice(screen, DICE_NUMBERS)
+
+    pygame.display.flip()
+
+
+def take_turn(screen, q, players):
+    if len(q) == 0:
+      mark_penalty()
+    for event in q:
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            position = pygame.mouse.get_pos()
+            if (position[0] >140 and position[0]<160) and (position[1]>10 and position[1]<30):
+                roll_dice()
+            check_grid(screen, position, players)
+
+def mark_box(screen, x, y):
+    small_box = pygame.Rect(x + 5, y+5, 30, 30)
+    pygame.draw.rect(screen, "black", small_box)
+
+
+def mark_penalty():
+    return None
+
+DICE_LOCKED = [False, False, False, False, False, False]
+DICE_COLORS = [pygame.Color(0, 0, 0, 0), pygame.Color(0, 0, 0, 0), pygame.Color(255, 51, 51,255), pygame.Color(255,209,51,207), pygame.Color(67,182,25,227), pygame.Color(51,51,255,248)]
+DICE_NUMBERS = [1,1,1,1,1,1]
+
+def roll_dice():
+    for i in range(6):
+        DICE_NUMBERS[i]=random.randint(1,6)
+
+
+def check_grid(screen, position, players):
+
+    left_edge_x = 50
+    right_edge_x = 830
+    starting_y = 100
+    middle_y = 470
+    bottom_y = 840
+
+    y = starting_y
+    for p in range(players):
+        if p == 1 or p == 3:
+            y = middle_y
+        if p == 4 or p == 5:
+            y = bottom_y
+        if p == 2:
+            y = starting_y
+        for j in range(4):
+            if p == 0 or p == 1 or p == 4:
+                x = left_edge_x
+            else:
+                x = right_edge_x
+            for i in range(11):
+                if position[0] in range(x, x+50) and position[1] in range(y, y+50):
+                    mark_box(screen, x, y)
+                x+=60
+            y+=60
+
+def end_turn_button(screen):
+    end_turn_font = pygame.font.Font('freesansbold.ttf', 24)
+    end_turn = end_turn_font.render("End Turn", True, "black", None)
+    end_turn_box = pygame.Rect(635, 15, 130, 30)
+    pygame.draw.rect(screen, "gray", end_turn_box)
+    end_turn_rect = end_turn.get_rect()
+    end_turn_rect.center = (700, 30)
+    screen.blit(end_turn, end_turn_rect)
+
+def new_game(screen):
+    new_game_font = pygame.font.Font('freesansbold.ttf', 24)
+    new_game = new_game_font.render("New Game", True, "black", None)
+    new_game_box = pygame.Rect(635, 50, 130, 30)
+    pygame.draw.rect(screen, "gray", new_game_box)
+    new_game_rect = new_game.get_rect()
+    new_game_rect.center = (700, 65)
+    screen.blit(new_game, new_game_rect)
+
+
+def display_dice(screen, num):
+    dice_x = 20
+    dice_y =20
+    # wipe_dice(screen)
+    dice_back = pygame.Rect(0, 0, 140, 30)
+    pygame.draw.rect(screen, "white", dice_back)
+    for i in range(6):
+        if(DICE_LOCKED[i]==False):
+            dice_font = pygame.font.Font('freesansbold.ttf', 32)
+            dice = dice_font.render(str(num[i]), True, DICE_COLORS[i], None)
+            dice_rect = dice.get_rect()
+            dice_rect.center = (dice_x, dice_y)
+            screen.blit(dice, dice_rect)
+        dice_x+=20
+
+    dice_box = pygame.Rect(dice_x, dice_y - 10, 20, 20)
+    pygame.draw.rect(screen, "gray", dice_box)
+
+
 
 def create_board(location, screen):
     x, y = location
