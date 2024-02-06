@@ -1,6 +1,9 @@
 import pygame
 import random
 
+import logic
+
+
 def get_num_players():
     num_players = 0
     while num_players < 2 or num_players > 6 :
@@ -58,6 +61,7 @@ def main():
         screen = pygame.display.set_mode((1610, 1220))
 
     initial_build(screen, players)
+    logic.game(6, 0)
 
     while running:
         # poll for events
@@ -101,6 +105,7 @@ def mark_box(screen, x, y):
 
 
 def mark_penalty():
+    # print("penalty")
     return None
 
 DICE_LOCKED = [False, False, False, False, False, False]
