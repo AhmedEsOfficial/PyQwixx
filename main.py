@@ -1,6 +1,7 @@
 import pygame
 import random
-from logic import board
+
+import logic
 from logic import game
 
 
@@ -51,7 +52,7 @@ def main():
 
     clock = pygame.time.Clock()
     running = True
-    g = game(players, 0)
+    g = logic.game(players, 0)
     screen = pygame.display.set_mode((1610, 1220))
 
     # if players == 3 or players == 4:
