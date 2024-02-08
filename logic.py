@@ -24,6 +24,13 @@ class game:
         self.dice_numbers = [random.randint(1, 6) for _ in range(6)]
         self.boards = [board() for player in range(players)]
         self.over=False
+        self.scoring = []
+        add = [x+2 for x in range(12)]
+        for x in range(12):
+            if x == 0:
+                self.scoring.append(1)
+            else:
+                self.scoring.append(self.scoring[x-1] + add[x-1])
 
 
     def roll_dice(self):
@@ -32,6 +39,9 @@ class game:
 
     def new_turn(self):
         #print(self.boards[self.active_player].rows)
+        for row in range(4):
+            print(self.get_row_score(row))
+
 
         self.active_player = (self.active_player + 1) % self.players
 
@@ -44,17 +54,14 @@ class game:
     def get_active_player(self):
         return self.active_player
 
-    def get_row_score(self, move):
+    def get_row_score(self, row):
         row_score = 0
-        row, index = move
-        for x in range(index):
-            if self.rows[row][index] == 2:
-                row_score += 1
-        scoring = []
-        add = [r+1 for r in range(12)]
         for x in range(12):
-            scoring.append(x + 1 + add[x] )
-        return row_score
+            if self.boards[self.active_player].rows[row][x] == 2 or self.boards[self.active_player].rows[row][x] == 3:
+                row_score += 1
+        if row_score == 0:
+                return 0
+        return self.scoring[row_score-1]
     def cross_off_box(self, player, move):
         row, index = move
         white_dice = self.dice_numbers[0] + self.dice_numbers[1]
