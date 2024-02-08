@@ -1,7 +1,6 @@
 import pygame
 import random
-
-import logic
+from logic import board
 from logic import game
 
 
@@ -52,7 +51,7 @@ def main():
 
     clock = pygame.time.Clock()
     running = True
-    g = logic.game(players, 0)
+    g = game(players, 0)
     screen = pygame.display.set_mode((1610, 1220))
 
     # if players == 3 or players == 4:
@@ -139,7 +138,6 @@ def take_turn(screen, q, game):
     for event in q:
         if event.type == pygame.MOUSEBUTTONDOWN:
             position = pygame.mouse.get_pos()
-            print(position)
             if (position[0] > 140 and position[0] < 160) and (position[1] > 10 and position[1] < 30):
                 game.roll_dice()
                 # screen_update(screen, game)
@@ -154,6 +152,8 @@ def take_turn(screen, q, game):
                 check_penalty(screen, game)
 
             check_grid(screen, position, game.players, game)
+            for i in range(4):
+               print(str(i)+ str(game.get_row_score(i)) )
 
 
 def mark_box(screen, x, y):
@@ -222,8 +222,9 @@ def check_grid(screen, position, players, game):
                 x = right_edge_x
             for i in range(11):
                 if position[0] in range(x, x + 50) and position[1] in range(y, y + 50):
-                    mark_box(screen, x, y)
-                    game.boards[p].cross((j, i))
+                    if game.cross_off_box(p, (j, i)) == 1:
+                        mark_box(screen, x, y)
+                        print("Player: " + str(p) + str(game.boards[p].rows))
                 x += 60
             y += 60
 
