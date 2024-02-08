@@ -65,13 +65,38 @@ class game:
                 result = self.boards[player].cross(move)
                 return result
 
-
-
     def matching_numbers(self, index):
         return 10 - index
 
     def get_active_player(self):
         return self.active_player
 
-    def get_score(self):
-        return None
+    def get_row_score(self, move):
+        row_score = 0
+        row, index = move
+        for x in range(index):
+            if self.rows[row][index] == 2:
+                row_score += 1
+        if row_score == 2:
+            row_score = 3
+        if row_score == 3:
+            row_score = 6
+        if row_score == 4:
+            row_score = 10
+        if row_score == 5:
+            row_score = 15
+        if row_score == 6:
+            row_score = 21
+        if row_score == 7:
+            row_score = 28
+        if row_score == 8:
+            row_score = 36
+        if row_score == 9:
+            row_score = 45
+        if row_score == 10:
+            row_score = 55
+        if row_score == 11:
+            row_score = 66
+        if row_score == 12:
+            row_score = 78
+        return row_score
