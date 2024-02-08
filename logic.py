@@ -7,6 +7,7 @@ class board:
 
     def __init__(self):
         self.rows = [[0 for x in range(12)] for x in range(4)]
+        self.locked = [0,0,0,0]
         print(self.rows)
 
     def cross(self, move):
@@ -42,10 +43,11 @@ class game:
         self.current_turn = 0
         self.players = players
         self.penalties = [0 for _ in range(players)]
+        self.moves = 0
         self.row_locked = [False for _ in range(4)]
         self.active_player = first_player
         self.dice_numbers = [random.randint(1, 6) for _ in range(6)]
-        self.boards = [board() for player in range(players)]
+        self.boards = [board() for _ in range(players)]
         self.over = False
         self.scoring = []
         add = [x + 2 for x in range(12)]
@@ -61,15 +63,19 @@ class game:
 
     def new_turn(self):
         self.active_player = (self.active_player + 1) % self.players
+        self.moves = 0
 
     def get_row_score(self, row):
         row_score = 0
+        total_score = 0
         for x in range(12):
             if self.boards[self.active_player].rows[row][x] == 2 or self.boards[self.active_player].rows[row][x] == 3:
                 row_score += 1
         if row_score == 0:
             return 0
         return self.scoring[row_score - 1]
+
+
 
     def cross_off_box(self, player, move):
         row, index = move
@@ -80,7 +86,13 @@ class game:
         legal_moves = legal_moves + [(2, self.matching_numbers(white_sum - 2))]
         legal_moves = legal_moves + [(3, self.matching_numbers(white_sum - 2))]
 
-
+        for i in range(self.players):
+            for j in range(4):
+                if self.boards[i].rows[j][10] == 2:
+                    print("LOCK")
+                    for n in legal_moves:
+                        if n[0] == i:
+                            legal_moves.remove(n)
 
         if player != self.active_player:
             if move in legal_moves:
@@ -98,12 +110,17 @@ class game:
             legal_moves = legal_moves + [(3, 10 - ((color_dice[3] + white_dice[0]) - 2))]
             legal_moves = legal_moves + [(3, 10 - ((color_dice[3] + white_dice[1] - 2)))]
 
+            for i in range(self.players):
+                for j in range(4):
+                    if self.boards[i].rows[j][10] == 2:
+                        self.boards[i].locked[j] =1
+                        for n in legal_moves:
+                            if n[0] == j:
+                                legal_moves.remove(n)
+
             if move in legal_moves:
                 result = self.boards[player].cross(move)
                 return result
-
-
-
 
 
     def matching_numbers(self, index):
