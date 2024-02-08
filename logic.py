@@ -24,28 +24,28 @@ class board:
                 self.rows[row][j] = self.rows[row][j] + 1
 
 
-k = board()
-print(k.cross(0, 4))
-print(k.rows)
-print(k.cross(0, 9))
-print(k.rows)
-print(k.cross(0, 11))
-print(k.rows)
-print(k.cross(0, 4))
-print(k.rows)
+# k = board()
+# print(k.cross(0, 4))
+# print(k.rows)
+# print(k.cross(0, 9))
+# print(k.rows)
+# print(k.cross(0, 11))
+# print(k.rows)
+# print(k.cross(0, 4))
+# print(k.rows)
 
 
 class game:
 
     # Pass the number of players and the first player
-    def __int__(self, players, first_player):
+    def __init__(self, players, first_player):
         self.current_turn = 0
         self.players = players
-        self.penalties = [0 for player in players]
+        self.penalties = [0 for _ in range(players)]
         self.row_locked = [False for _ in range(4)]
         self.active_player = first_player
-        self.dice_numbers = [random.randint(1, 6) for _ in range(4)]
-        self.boards = [board() for player in players]
+        self.dice_numbers = [random.randint(1, 6) for _ in range(6)]
+        self.boards = [board() for player in range(players)]
 
     def roll_dice(self):
         for i in range(6):

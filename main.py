@@ -1,15 +1,18 @@
 import pygame
 import random
+from logic import board
+from logic import game
+
 
 def get_num_players():
     num_players = 0
-    while num_players < 2 or num_players > 6 :
+    while num_players < 2 or num_players > 6:
         num_players = int(input("How many players?: "))
 
     return num_players
 
 
-def initial_build(screen, players):
+def initial_build(screen, game):
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("white")
     board1_location = (50, 100)
@@ -17,40 +20,38 @@ def initial_build(screen, players):
     create_board(board1_location, screen)
     create_board(board2_location, screen)
 
-    if players >= 3:
+    if game.players >= 3:
         board3_location = (830, 100)
         create_board(board3_location, screen)
 
-    if players >= 4:
+    if game.players >= 4:
         board4_location = (830, 470)
         create_board(board4_location, screen)
 
-    if players >= 5:
+    if game.players >= 5:
         board5_location = (50, 840)
         create_board(board5_location, screen)
 
-    if players >= 6:
+    if game.players >= 6:
         board5_location = (830, 840)
         create_board(board5_location, screen)
 
-    display_dice(screen, DICE_NUMBERS)
+    display_dice(screen, game.dice_numbers, game.row_locked)
     new_game(screen)
     end_turn_button(screen)
     # flip() the display to put your work on screen
     pygame.display.flip()
 
 
-
-
 def main():
-    #game setup
+    # game setup
     # players = get_num_players()
-    players = 5
+    players = 4
     pygame.init()
 
     clock = pygame.time.Clock()
     running = True
-
+    g = game(players, 0)
     screen = pygame.display.set_mode((1610, 1220))
 
     # if players == 3 or players == 4:
@@ -59,9 +60,8 @@ def main():
     # if players == 5 or players == 6:
     #     screen = pygame.display.set_mode((1610, 1220))
 
-    initial_build(screen, players)
-    active_player = 0
-    mark_active_player(screen, active_player)
+    initial_build(screen, g)
+    mark_active_player(screen, players, g.get_active_player())
 
     while running:
         # poll for events
@@ -71,43 +71,48 @@ def main():
         for event in q:
             if event.type == pygame.QUIT:
                 running = False
-        take_turn(screen, q, players)
+        take_turn(screen, q, g)
 
-            # if event.type == pygame.MOUSEBUTTONDOWN:
-            #     position = pygame.mouse.get_pos()
-            #     print("mouse clicked at", position)
-            #     if (position[0] > 140 and position[0] < 160) and (position[1] > 10 and position[1] < 30):
-            #         roll_dice()
-        screen_update(screen)
+        # if event.type == pygame.MOUSEBUTTONDOWN:
+        #     position = pygame.mouse.get_pos()
+        #     print("mouse clicked at", position)
+        #     if (position[0] > 140 and position[0] < 160) and (position[1] > 10 and position[1] < 30):
+        #         roll_dice()
+        screen_update(screen, g)
         clock.tick(600)  # limits FPS to 60
 
     pygame.quit()
 
-def screen_update(screen):
-    display_dice(screen, DICE_NUMBERS)
+
+def screen_update(screen, game):
+    display_dice(screen, game.dice_numbers, game.row_locked)
     pygame.display.flip()
 
-def mark_active_player(screen, player):
-    active = player
+
+# def find_active_player(players):
+#     for i in range(players):
+#         if ACTIVE_PLAYER[i] == 1:
+#             return i
+#     return 0
+
+def mark_active_player(screen, players, active):
+    # active = find_active_player(players)
     left_x = 20
     top_y = 90
-    right_x = 40
-    bottom_y = 410
     if active == 2 or active == 3:
         left_x += 780
     if active == 1 or active == 3:
-        top_y +=370
+        top_y += 370
     if active == 4:
         top_y += 740
     small_box = pygame.Rect(left_x, top_y, 20, 320)
     pygame.draw.rect(screen, "green", small_box)
 
-def remove_active_player(screen, player):
-    active = player
+
+def remove_active_player(screen, players, active):
+    # active = find_active_player(players)
     left_x = 20
     top_y = 90
-    right_x = 40
-    bottom_y = 410
     if active == 2 or active == 3:
         left_x += 780
     if active == 1 or active == 3:
@@ -117,55 +122,84 @@ def remove_active_player(screen, player):
     small_box = pygame.Rect(left_x, top_y, 20, 320)
     pygame.draw.rect(screen, "white", small_box)
 
-def take_turn(screen, q, players):
-    if len(q) == 0:
-      mark_penalty()
 
+# def switch_active_player(players):
+#     print(ACTIVE_PLAYER)
+#     active = find_active_player(players)
+#     if active == players - 1:
+#         ACTIVE_PLAYER[0] = 1
+#     else:
+#         ACTIVE_PLAYER[active+1] = 1
+#     ACTIVE_PLAYER[active] = 0
+#     print(ACTIVE_PLAYER)
+
+def take_turn(screen, q, game):
+    check_penalty(screen, game)
     for event in q:
         if event.type == pygame.MOUSEBUTTONDOWN:
             position = pygame.mouse.get_pos()
-            if (position[0] >140 and position[0]<160) and (position[1]>10 and position[1]<30):
-                roll_dice()
-            if (position[0] >635 and position[0]<765) and (position[1]>50 and position[1]<80):
+            print(position)
+            if (position[0] > 140 and position[0] < 160) and (position[1] > 10 and position[1] < 30):
+                game.roll_dice()
+                # screen_update(screen, game)
+            if (position[0] > 635 and position[0] < 765) and (position[1] > 50 and position[1] < 80):
                 print("NEW GAME")
                 reset_game(screen)
-            if(position[0] >635 and position[0]<765) and (position[1]>15 and position[1]<45):
+            if (position[0] > 635 and position[0] < 765) and (position[1] > 15 and position[1] < 45):
                 print("NEW TURN")
-                remove_active_player(screen, active_player)
-                active_player+=1
-                if active_player > players:
-                    active_player = 0
-                mark_active_player(screen, active_player)
+                remove_active_player(screen, game.players, game.get_active_player())
+                game.new_turn()
+                mark_active_player(screen, game.players, game.get_active_player())
+                check_penalty(screen, game)
 
-
-            check_grid(screen, position, players)
+            check_grid(screen, position, game.players, game)
 
 
 def mark_box(screen, x, y):
     cross_font = pygame.font.Font('freesansbold.ttf', 36)
     cross = cross_font.render("X", True, "black", None)
-    small_box = pygame.Rect(x + 5, y+5, 30, 30)
-    # pygame.draw.rect(screen, "black", small_box)
+    small_box = pygame.Rect(x + 5, y + 5, 30, 30)
     screen.blit(cross, small_box)
 
 
-def mark_penalty():
-    return None
+def mark_penalty(screen, player, n):
+    left_x = 50
+    top_y = 370
+    if player == 2 or player == 3:
+        left_x += 780
+    if player == 1 or player == 3:
+        top_y += 370
+    if player == 4:
+        top_y += 740
+    cross_font = pygame.font.Font('freesansbold.ttf', 14)
+    cross = cross_font.render("X", True, "black", None)
+    for i in range(n):
+        small_box = pygame.Rect(left_x, top_y, 30, 30)
+        screen.blit(cross, small_box)
+        left_x+=30
 
-DICE_LOCKED = [False, False, False, False, False, False]
-DICE_COLORS = [pygame.Color(0, 0, 0, 0), pygame.Color(0, 0, 0, 0), pygame.Color(255, 51, 51,255), pygame.Color(255,209,51,207), pygame.Color(67,182,25,227), pygame.Color(51,51,255,248)]
-DICE_NUMBERS = [1,1,1,1,1,1]
 
-def roll_dice():
-    for i in range(6):
-        DICE_NUMBERS[i]=random.randint(1,6)
+def check_penalty(screen, game):
+    index = 0
+    for i in game.penalties:
+        if i > 0:
+            mark_penalty(screen, index, i)
+        index+=1
+
+
+DICE_COLORS = [pygame.Color(0, 0, 0, 0), pygame.Color(0, 0, 0, 0), pygame.Color(255, 51, 51, 255),
+               pygame.Color(255, 209, 51, 207), pygame.Color(67, 182, 25, 227), pygame.Color(51, 51, 255, 248)]
+
 
 def reset_game(screen):
+    screen.fill("white")
+    pygame.display.flip()
     players = get_num_players()
-    initial_build(screen,players)
+    g = game(players, 0)
+    initial_build(screen, g)
 
-def check_grid(screen, position, players):
 
+def check_grid(screen, position, players, game):
     left_edge_x = 50
     right_edge_x = 830
     starting_y = 100
@@ -186,10 +220,12 @@ def check_grid(screen, position, players):
             else:
                 x = right_edge_x
             for i in range(11):
-                if position[0] in range(x, x+50) and position[1] in range(y, y+50):
+                if position[0] in range(x, x + 50) and position[1] in range(y, y + 50):
                     mark_box(screen, x, y)
-                x+=60
-            y+=60
+                    game.boards[p].cross((j, i))
+                x += 60
+            y += 60
+
 
 def end_turn_button(screen):
     end_turn_font = pygame.font.Font('freesansbold.ttf', 24)
@@ -199,6 +235,7 @@ def end_turn_button(screen):
     end_turn_rect = end_turn.get_rect()
     end_turn_rect.center = (700, 30)
     screen.blit(end_turn, end_turn_rect)
+
 
 def new_game(screen):
     new_game_font = pygame.font.Font('freesansbold.ttf', 24)
@@ -210,24 +247,36 @@ def new_game(screen):
     screen.blit(new_game, new_game_rect)
 
 
-def display_dice(screen, num):
+def display_dice(screen, num, locked):
     dice_x = 20
-    dice_y =20
+    dice_y = 20
     # wipe_dice(screen)
     dice_back = pygame.Rect(0, 0, 140, 30)
     pygame.draw.rect(screen, "white", dice_back)
+
     for i in range(6):
-        if(DICE_LOCKED[i]==False):
-            dice_font = pygame.font.Font('freesansbold.ttf', 32)
-            dice = dice_font.render(str(num[i]), True, DICE_COLORS[i], None)
-            dice_rect = dice.get_rect()
-            dice_rect.center = (dice_x, dice_y)
-            screen.blit(dice, dice_rect)
-        dice_x+=20
+        dice_font = pygame.font.Font('freesansbold.ttf', 32)
+        dice = dice_font.render(str(num[i]), True, DICE_COLORS[i], None)
+        dice_rect = dice.get_rect()
+        dice_rect.center = (dice_x, dice_y)
+        screen.blit(dice, dice_rect)
+        if (i > 1):
+            if (locked[i - 2] == True):
+                dice_font = pygame.font.Font('freesansbold.ttf', 32)
+                dice = dice_font.render("L", True, DICE_COLORS[i], None)
+                dice_rect = dice.get_rect()
+                dice_rect.center = (dice_x, dice_y)
+                screen.blit(dice, dice_rect)
+            else:
+                dice_font = pygame.font.Font('freesansbold.ttf', 32)
+                dice = dice_font.render(str(num[i]), True, DICE_COLORS[i], None)
+                dice_rect = dice.get_rect()
+                dice_rect.center = (dice_x, dice_y)
+                screen.blit(dice, dice_rect)
+        dice_x += 20
 
     dice_box = pygame.Rect(dice_x, dice_y - 10, 20, 20)
     pygame.draw.rect(screen, "gray", dice_box)
-
 
 
 def create_board(location, screen):
@@ -242,7 +291,7 @@ def create_board(location, screen):
     penalty_font = pygame.font.Font('freesansbold.ttf', 20)
     c = 0
 
-    #create background rectangle - 730 by 320 pixels
+    # create background rectangle - 730 by 320 pixels
     border = pygame.Rect(x - 10, y - 10, 730, 320)
     pygame.draw.rect(screen, "gray", border)
     workingx = x
@@ -273,11 +322,11 @@ def create_board(location, screen):
         signsRect.center = (workingx + 23, y + 250 + 20)
         screen.blit(signs, signsRect)
 
-    workingy=y
+    workingy = y
 
     for color in colors:
         c += 1
-        workingx=x
+        workingx = x
         for num in range(12):
 
             board = pygame.Rect(workingx, workingy, w, h)
@@ -299,6 +348,7 @@ def create_board(location, screen):
             screen.blit(numbers, numbersRect)
 
         workingy += 60
+
 
 if __name__ == "__main__":
     main()
