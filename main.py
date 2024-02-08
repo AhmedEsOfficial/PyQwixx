@@ -146,10 +146,13 @@ def take_turn(screen, q, game):
                 reset_game(screen)
             if (position[0] > 635 and position[0] < 765) and (position[1] > 15 and position[1] < 45):
                 print("NEW TURN")
+                if game.moves == 0:
+                    game.penalties[game.get_active_player()] +=1
+                check_penalty(screen, game)
                 remove_active_player(screen, game.players, game.get_active_player())
                 game.new_turn()
                 mark_active_player(screen, game.players, game.get_active_player())
-                check_penalty(screen, game)
+
 
             check_grid(screen, position, game.players, game)
             for i in range(4):
@@ -184,8 +187,11 @@ def check_penalty(screen, game):
     index = 0
     for i in game.penalties:
         if i > 0:
+            if i == 4:
+                reset_game(screen)
             mark_penalty(screen, index, i)
         index+=1
+
 
 
 DICE_COLORS = [pygame.Color(0, 0, 0, 0), pygame.Color(0, 0, 0, 0), pygame.Color(255, 51, 51, 255),
@@ -224,7 +230,8 @@ def check_grid(screen, position, players, game):
                 if position[0] in range(x, x + 50) and position[1] in range(y, y + 50):
                     if game.cross_off_box(p, (j, i)) == 1:
                         mark_box(screen, x, y)
-                        print("Player: " + str(p) + str(game.boards[p].rows))
+                        if p == game.get_active_player():
+                            game.moves +=1
                 x += 60
             y += 60
 
